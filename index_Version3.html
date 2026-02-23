@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="CasaSpese"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0a0e27"/>
+<meta name="description" content="Gestisci spese familiari con stile – Gratuita, offline, senza account"/>
+<title>CasaSpese – Spese Familiari Eleganti</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'%3E%3Cstop offset='0%' style='stop-color:%236366f1;stop-opacity:1'/%3E%3Cstop offset='100%' style='stop-color:%238b5cf6;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='40' fill='url(%23g)'/%3E%3Ctext x='90' y='120' text-anchor='middle' font-size='100' font-family='system-ui'%3E🏠%3C/text%3E%3C/svg%3E"/>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'%3E%3Cstop offset='0%' style='stop-color:%236366f1;stop-opacity:1'/%3E%3Cstop offset='100%' style='stop-color:%238b5cf6;stop-opacity:1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Ctext x='16' y='24' text-anchor='middle' font-size='18'%3E🏠%3C/text%3E%3C/svg%3E"/>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+html,body {
+  height:100%;
+  background:#0a0e27;
+  color:#e0e7ff;
+  font-family:'Inter',-apple-system,sans-serif;
+  overscroll-behavior:none;
+  background: linear-gradient(135deg, #0a0e27 0%, #16213e 100%);
+}
+
+#root { height:100%; display:flex; flex-direction:column; }
+
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#4c1d95; border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:#6d28d9; }
+
+input, select, textarea, button { font-family:inherit; }
+input:focus, select:focus, textarea:focus { outline:none; }
+button { cursor:pointer; }
+
+@keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideInDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideInLeft { from { opacity:0; transform:translateX(-16px); } to { opacity:1; transform:translateX(0); } }
+@keyframes scaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
+@keyframes float { 0%,100% { transform:translateY(0px); } 50% { transform:translateY(-8px); } }
+@keyframes shimmer { 0% { background-position:0% 0%; } 100% { background-position:100% 100%; } }
+
+.fade-in { animation:fadeInUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+.slide-down { animation:slideInDown 0.35s ease both; }
+.slide-left { animation:slideInLeft 0.3s ease both; }
+.scale-in { animation:scaleIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+.spin { animation:spin 1s linear infinite; }
+.pulse { animation:pulse 2s ease-in-out infinite; }
+.float { animation:float 3s ease-in-out infinite; }
+
+.row-item { transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+.row-item:hover { transform:translateX(4px); background:rgba(99,102,241,0.08) !important; }
+
+.press { transition:all 0.15s cubic-bezier(0.34,1.56,0.64,1); }
+.press:active { transform:scale(0.96) translateZ(0); }
+
+.header { padding-left:max(16px,env(safe-area-inset-left)); padding-right:max(16px,env(safe-area-inset-right)); }
+.bottom-nav { padding-bottom:max(8px,env(safe-area-inset-bottom)); }
+.main-scroll { padding-left:max(16px,env(safe-area-inset-left)); padding-right:max(16px,env(safe-area-inset-right)); }
+
+.glass { 
+  background:rgba(99,102,241,0.08);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(99,102,241,0.2);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.neon { text-shadow:0 0 10px rgba(99,102,241,0.6), 0 0 20px rgba(139,92,246,0.3); }
+
+.spinner { 
+  width:48px; height:48px;
+  border:3px solid rgba(99,102,241,0.2);
+  border-top-color:#6366f1;
+  border-right-color:#8b5cf6;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+.card-glow {
+  box-shadow:
+    0 0 40px rgba(99,102,241,0.2),
+    0 20px 40px rgba(0,0,0,0.3),
+    inset 0 0 40px rgba(139,92,246,0.05);
+}
+
+.text-muted { color:#94a3b8; }
+.text-accent { color:#6366f1; }
+.text-bright { color:#f1f5f9; }
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+const COLORS = {
+  bg: '#0a0e27',
+  bgGradient: 'linear-gradient(135deg, #0a0e27 0%, #16213e 100%)',
+  card: '#1e293b',
+  cardLight: '#334155',
+  cardDarker: '#0f172a',
+  border: 'rgba(99,102,241,0.2)',
+  borderHeavy: 'rgba(99,102,241,0.3)',
+  primary: '#6366f1',
+  primaryLight: '#818cf8',
+  primaryDark: '#4f46e5',
+  secondary: '#8b5cf6',
+  tertiary: '#ec4899',
+  text: '#e0e7ff',
+  textMuted: '#94a3b8',
+  success: '#10b981',
+  successLight: '#34d399',
+  warning: '#f59e0b',
+  danger: '#ef4444',
+  dangerLight: '#f87171',
+  green: '#10b981',
+  blue: '#3b82f6',
+  amber: '#f59e0b',
+  cyan: '#06b6d4',
+  pink: '#ec4899',
+  purple: '#8b5cf6',
+  violet: '#7c3aed',
+};
+
+const EXP_CATS = [
+  {id:"casa", label:"Casa & Affitto", emoji:"🏠", color:"#ef4444", gradient:"linear-gradient(135deg, #f87171, #ef4444)"},
+  {id:"spesa", label:"Spesa Alimentare", emoji:"🛒", color:"#10b981", gradient:"linear-gradient(135deg, #34d399, #10b981)"},
+  {id:"utenze", label:"Utenze", emoji:"⚡", color:"#f59e0b", gradient:"linear-gradient(135deg, #fbbf24, #f59e0b)"},
+  {id:"trasporti", label:"Trasporti", emoji:"🚗", color:"#3b82f6", gradient:"linear-gradient(135deg, #60a5fa, #3b82f6)"},
+  {id:"salute", label:"Salute", emoji:"❤️", color:"#ec4899", gradient:"linear-gradient(135deg, #f472b6, #ec4899)"},
+  {id:"svago", label:"Svago & Ristoranti", emoji:"🎭", color:"#8b5cf6", gradient:"linear-gradient(135deg, #c4b5fd, #8b5cf6)"},
+  {id:"abbonamenti", label:"Abbonamenti", emoji:"💳", color:"#6366f1", gradient:"linear-gradient(135deg, #818cf8, #6366f1)"},
+  {id:"sport", label:"Sport & Fitness", emoji:"💪", color:"#06b6d4", gradient:"linear-gradient(135deg, #22d3ee, #06b6d4)"},
+  {id:"bambini", label:"Bambini", emoji:"👶", color:"#f87171", gradient:"linear-gradient(135deg, #fca5a5, #f87171)"},
+  {id:"viaggi", label:"Viaggi", emoji:"✈️", color:"#06b6d4", gradient:"linear-gradient(135deg, #22d3ee, #06b6d4)"},
+  {id:"regali", label:"Regali", emoji:"🎁", color:"#ec4899", gradient:"linear-gradient(135deg, #f472b6, #ec4899)"},
+  {id:"istruzione", label:"Istruzione", emoji:"📚", color:"#7c3aed", gradient:"linear-gradient(135deg, #a78bfa, #7c3aed)"},
+  {id:"bar", label:"Bar & Caffè", emoji:"☕", color:"#92400e", gradient:"linear-gradient(135deg, #d97706, #92400e)"},
+  {id:"altro", label:"Altro", emoji:"•", color:"#6b7280", gradient:"linear-gradient(135deg, #9ca3af, #6b7280)"},
+];
+
+const INC_CATS = [
+  {id:"stipendio", label:"Stipendio", emoji:"💼", color:"#10b981", gradient:"linear-gradient(135deg, #34d399, #10b981)"},
+  {id:"freelance", label:"Freelance", emoji:"💻", color:"#3b82f6", gradient:"linear-gradient(135deg, #60a5fa, #3b82f6)"},
+  {id:"affitto_in", label:"Affitto", emoji:"🏠", color:"#f59e0b", gradient:"linear-gradient(135deg, #fbbf24, #f59e0b)"},
+  {id:"rimborso", label:"Rimborso", emoji:"↩️", color:"#06b6d4", gradient:"linear-gradient(135deg, #22d3ee, #06b6d4)"},
+  {id:"investim", label:"Investimenti", emoji:"📈", color:"#ec4899", gradient:"linear-gradient(135deg, #f472b6, #ec4899)"},
+  {id:"regalo_in", label:"Regalo", emoji:"🎁", color:"#8b5cf6", gradient:"linear-gradient(135deg, #c4b5fd, #8b5cf6)"},
+  {id:"altro_in", label:"Altro", emoji:"•", color:"#6b7280", gradient:"linear-gradient(135deg, #9ca3af, #6b7280)"},
+];
+
+const MONTHS = ["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"];
+const MONTHS_FULL = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+const Q_AMTS = [5,10,20,50,100,200];
+
+const getCat = id => EXP_CATS.find(c=>c.id===id)||EXP_CATS.at(-1);
+const getIC = id => INC_CATS.find(c=>c.id===id)||INC_CATS.at(-1);
+const fmt = n => (n||0).toLocaleString("it-IT", {style:"currency", currency:"EUR"});
+const today = () => new Date().toISOString().split("T")[0];
+const curMon = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; };
+const monLabel = m => { if(!m)return""; const [y,mo]=m.split("-"); return `${MONTHS_FULL[+mo-1]} ${y}`; };
+const daysInMon = ym => { const [y,m]=ym.split("-"); return new Date(+y,+m,0).getDate(); };
+const uid = () => Math.random().toString(36).slice(2)+Date.now().toString(36);
+
+const LS = {
+  get: (k,def) => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):def; } catch{return def;} },
+  set: (k,v) => { try { localStorage.setItem(k,JSON.stringify(v)); } catch{} },
+};
+
+function Btn({children, variant="primary", size="md", onClick, disabled, type="button", style={}, ...props}) {
+  const baseStyle = {
+    cursor: disabled ? "not-allowed" : "pointer",
+    borderRadius: 12,
+    fontWeight: 600,
+    border: "none",
+    fontFamily: "inherit",
+    transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
+    userSelect: "none",
+    flexShrink: 0,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  };
+
+  const sizes = {
+    sm: { padding: "8px 14px", fontSize: 12 },
+    md: { padding: "11px 20px", fontSize: 13 },
+    lg: { padding: "14px 28px", fontSize: 15, fontWeight: 700 },
+  };
+
+  const variants = {
+    primary: {
+      background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`,
+      color: "#fff",
+      boxShadow: `0 8px 32px rgba(99,102,241,0.4)`,
+      opacity: disabled ? 0.5 : 1,
+    },
+    secondary: {
+      background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.tertiary})`,
+      color: "#fff",
+      boxShadow: `0 8px 32px rgba(139,92,246,0.4)`,
+      opacity: disabled ? 0.5 : 1,
+    },
+    ghost: {
+      background: "rgba(99,102,241,0.1)",
+      color: COLORS.primary,
+      border: `1px solid ${COLORS.border}`,
+    },
+    success: {
+      background: `linear-gradient(135deg, ${COLORS.green}, ${COLORS.successLight})`,
+      color: "#fff",
+      boxShadow: `0 8px 32px rgba(16,185,129,0.3)`,
+    },
+    danger: {
+      background: `linear-gradient(135deg, ${COLORS.danger}, ${COLORS.dangerLight})`,
+      color: "#fff",
+      boxShadow: `0 8px 32px rgba(239,68,68,0.3)`,
+    },
+  };
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className="press"
+      style={{ ...baseStyle, ...sizes[size], ...variants[variant], ...style }}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Card({children, style={}, hover=true}) {
+  return (
+    <div style={{
+      background: COLORS.card,
+      border: `1px solid ${COLORS.border}`,
+      borderRadius: 16,
+      padding: "18px",
+      boxShadow: "0 10px 40px rgba(0,0,0,0.3), inset 0 0 30px rgba(99,102,241,0.05)",
+      transition: hover ? "all 0.3s ease" : "none",
+      ...style
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function Chip({color, children, style={}}) {
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 5,
+      background: `${color}20`,
+      color,
+      border: `1px solid ${color}40`,
+      borderRadius: 20,
+      padding: "4px 12px",
+      fontSize: 11,
+      fontWeight: 700,
+      flexShrink: 0,
+      ...style
+    }}>
+      {children}
+    </span>
+  );
+}
+
+function FInput({label, error, helper, style={}, ...props}) {
+  return (
+    <div style={{marginBottom: 16}}>
+      {label && <label style={{display:"block", color:COLORS.textMuted, fontSize:10, marginBottom:6, textTransform:"uppercase", letterSpacing:1.2, fontWeight:700}}>
+        {label}
+      </label>}
+      <input {...props} style={{
+        width: "100%",
+        background: COLORS.cardDarker,
+        border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
+        borderRadius: 12,
+        padding: "12px 14px",
+        color: COLORS.text,
+        fontSize: 14,
+        transition: "all 0.2s",
+        WebkitAppearance: "none",
+        ...style
+      }} />
+      {helper && !error && <p style={{color:COLORS.textMuted, fontSize:10, marginTop:3}}>{helper}</p>}
+      {error && <p style={{color:COLORS.danger, fontSize:10, marginTop:3}}>{error}</p>}
+    </div>
+  );
+}
+
+function FSelect({label, children, ...props}) {
+  return (
+    <div style={{marginBottom: 16}}>
+      {label && <label style={{display:"block", color:COLORS.textMuted, fontSize:10, marginBottom:6, textTransform:"uppercase", letterSpacing:1.2, fontWeight:700}}>
+        {label}
+      </label>}
+      <select {...props} style={{
+        width: "100%",
+        background: COLORS.cardDarker,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 12,
+        padding: "12px 14px",
+        color: COLORS.text,
+        fontSize: 14,
+        WebkitAppearance: "none",
+        cursor: "pointer",
+      }}>
+        {children}
+      </select>
+    </div>
+  );
+}
+
+function ProgressBar({value, max, color=COLORS.primary, height=6}) {
+  const pct = max ? Math.min(100, (value/max)*100) : 0;
+  return (
+    <div style={{height, background:`${COLORS.border}`, borderRadius:999}}>
+      <div style={{
+        height: "100%",
+        width: `${pct}%`,
+        background: pct > 100 ? COLORS.danger : color,
+        borderRadius: 999,
+        transition: "width 0.6s cubic-bezier(0.34,1.56,0.64,1)",
+        boxShadow: `0 0 12px ${pct > 100 ? COLORS.danger : color}40`
+      }} />
+    </div>
+  );
+}
+
+function Modal({title, subtitle, onClose, children}) {
+  useEffect(()=>{document.body.style.overflow="hidden";return()=>{document.body.style.overflow="";};},[]);
+  return (
+    <div style={{
+      position:"fixed", inset:0,
+      background:"rgba(0,0,0,.75)",
+      zIndex:500,
+      display:"flex",
+      alignItems:"flex-end",
+      backdropFilter:"blur(12px)",
+    }} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="slide-down" style={{
+        background: COLORS.card,
+        borderRadius: "24px 24px 0 0",
+        padding: "24px 20px max(24px,env(safe-area-inset-bottom))",
+        width: "100%",
+        maxHeight: "92vh",
+        overflowY: "auto",
+        border: `1px solid ${COLORS.border}`,
+        boxShadow: "0 -20px 60px rgba(0,0,0,0.5), inset 0 0 40px rgba(99,102,241,0.08)",
+      }}>
+        <div style={{width:40, height:4, background:COLORS.border, borderRadius:2, margin:"0 auto 20px"}} />
+        <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:18}}>
+          <div>
+            <h3 style={{fontFamily:"'Space Grotesk'", fontSize:20, fontWeight:700, color:COLORS.text}}>
+              {title}
+            </h3>
+            {subtitle && <p style={{color:COLORS.textMuted, fontSize:12, marginTop:4}}>{subtitle}</p>}
+          </div>
+          <button onClick={onClose} style={{
+            background:`rgba(99,102,241,0.1)`,
+            border: `1px solid ${COLORS.border}`,
+            color:COLORS.textMuted,
+            width:36,
+            height:36,
+            borderRadius:10,
+            display:"flex",
+            alignItems:"center",
+            justifyContent:"center",
+            fontSize:18,
+            flexShrink:0,
+            cursor:"pointer",
+            transition:"all 0.2s"
+          }}>✕</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function DonutChart({data, size=160}) {
+  if(!data || !data.length) return <div style={{height:size, display:"flex", alignItems:"center", justifyContent:"center", color:COLORS.textMuted}}>No data</div>;
+  
+  const total = data.reduce((s,d)=>s+d.value,0);
+  if(!total) return null;
+  
+  const r = 60, cx = size/2, cy = size/2;
+  let angle = -Math.PI/2;
+  
+  const paths = data.map(d => {
+    const slice = (d.value/total)*2*Math.PI;
+    const x1 = cx + r*Math.cos(angle), y1 = cy + r*Math.sin(angle);
+    angle += slice;
+    const x2 = cx + r*Math.cos(angle), y2 = cy + r*Math.sin(angle);
+    const large = slice > Math.PI ? 1 : 0;
+    return {
+      path: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z`,
+      color: d.color,
+      label: d.label,
+      value: d.value
+    };
+  });
+  
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={cx} cy={cy} r={38} fill={COLORS.cardDarker}/>
+      {paths.map((p,i)=><path key={i} d={p.path} fill={p.color} opacity={.85} stroke={COLORS.card} strokeWidth={2}/>)}
+      <text x={cx} y={cy-8} textAnchor="middle" fill={COLORS.textMuted} fontSize={9} fontWeight="600">TOTALE</text>
+      <text x={cx} y={cy+8} textAnchor="middle" fill={COLORS.text} fontSize={12} fontWeight="700">
+        €{Math.round(total).toLocaleString("it-IT")}
+      </text>
+    </svg>
+  );
+}
+
+export default function App() {
+  const [expenses, setExpenses] = useState(()=>LS.get("cs_exp_v3",[]));
+  const [incomes, setIncomes] = useState(()=>LS.get("cs_inc_v3",[]));
+  const [budgets, setBudgets] = useState(()=>LS.get("cs_bgt_v3",{}));
+  const [goals, setGoals] = useState(()=>LS.get("cs_gls_v3",[]));
+  const [subs, setSubs] = useState(()=>LS.get("cs_sbs_v3",[]));
+  const [view, setView] = useState("dashboard");
+  const [month, setMonth] = useState(curMon());
+  const [modal, setModal] = useState(null);
+  const [editItem, setEditItem] = useState(null);
+  const [search, setSearch] = useState("");
+  const [hideAmts, setHideAmts] = useState(false);
+
+  const se = d=>{setExpenses(d);LS.set("cs_exp_v3",d);};
+  const si = d=>{setIncomes(d);LS.set("cs_inc_v3",d);};
+  const sb = d=>{setBudgets(d);LS.set("cs_bgt_v3",d);};
+  const sg = d=>{setGoals(d);LS.set("cs_gls_v3",d);};
+  const ss = d=>{setSubs(d);LS.set("cs_sbs_v3",d);};
+
+  const mExp = useMemo(()=>expenses.filter(e=>e.date.startsWith(month)), [expenses,month]);
+  const mInc = useMemo(()=>incomes.filter(e=>e.date.startsWith(month)), [incomes,month]);
+  const fExp = useMemo(()=>mExp.filter(e=>e.description.toLowerCase().includes(search.toLowerCase())||getCat(e.category).label.toLowerCase().includes(search.toLowerCase())), [mExp,search]);
+  const totalExp = useMemo(()=>mExp.reduce((s,e)=>s+e.amount,0),[mExp]);
+  const totalInc = useMemo(()=>mInc.reduce((s,e)=>s+e.amount,0),[mInc]);
+  const balance = totalInc - totalExp;
+  const totalSubs = useMemo(()=>subs.reduce((s,x)=>s+x.amount,0),[subs]);
+  const avgDaily = totalExp / (new Date().getDate()||1);
+  const projected = avgDaily * daysInMon(month);
+
+  const catData = useMemo(()=>EXP_CATS.map(c=>({
+    ...c, 
+    total: mExp.filter(e=>e.category===c.id).reduce((s,e)=>s+e.amount,0),
+    budget: budgets[c.id]||0,
+  })).filter(c=>c.total>0||c.budget>0), [mExp,budgets]);
+
+  const overBudget = catData.filter(c=>c.budget>0&&c.total>c.budget);
+  const upcomingBills = useMemo(()=>{const day=new Date().getDate();return subs.filter(s=>s.day>=day&&s.day<=day+7).sort((a,b)=>a.day-b.day);},[subs]);
+
+  const prevMon = ()=>{const d=new Date(month+"-01");d.setMonth(d.getMonth()-1);setMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`);};
+  const nextMon = ()=>{const d=new Date(month+"-01");d.setMonth(d.getMonth()+1);setMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`);};
+
+  const [ef, setEf] = useState({amount:"",description:"",category:"spesa",date:today(),note:"",recurring:false});
+  const [iF, setIF] = useState({amount:"",description:"",category:"stipendio",date:today(),note:""});
+  const [gf, setGf] = useState({name:"",target:"",saved:"",color:COLORS.primary,emoji:"🎯",deadline:""});
+  const [sf, setSf] = useState({name:"",amount:"",day:1,color:COLORS.primary,emoji:"📱"});
+  const [goalAddAmt, setGAA] = useState("");
+  const [goalSel, setGSel] = useState(null);
+  const [errs, setErrs] = useState({});
+
+  const openExp=(ex=null)=>{setEditItem(ex);setEf(ex?{...ex}:{amount:"",description:"",category:"spesa",date:today(),note:"",recurring:false});setErrs({});setModal("exp");};
+  const openInc=(inc=null)=>{setEditItem(inc);setIF(inc?{...inc}:{amount:"",description:"",category:"stipendio",date:today(),note:""});setErrs({});setModal("inc");};
+
+  const submitExp=e=>{
+    e.preventDefault();
+    const err={};
+    if(!ef.amount||isNaN(+ef.amount)||+ef.amount<=0) err.amount="Importo non valido";
+    if(!ef.description) err.description="Obbligatorio";
+    if(Object.keys(err).length){setErrs(err);return;}
+    const item={...ef,amount:+ef.amount,id:editItem?.id||uid()};
+    se(editItem?expenses.map(x=>x.id===editItem.id?item:x):[...expenses,item]);
+    setModal(null);setEditItem(null);
+  };
+
+  const submitInc=e=>{
+    e.preventDefault();
+    if(!iF.amount||+iF.amount<=0||!iF.description) return;
+    const item={...iF,amount:+iF.amount,id:editItem?.id||uid()};
+    si(editItem?incomes.map(x=>x.id===editItem.id?item:x):[...incomes,item]);
+    setModal(null);setEditItem(null);
+  };
+
+  const submitGoal=e=>{
+    e.preventDefault();
+    if(!gf.name||!gf.target) return;
+    const item={...gf,target:+gf.target,saved:+gf.saved||0,id:editItem?.id||uid()};
+    sg(editItem?goals.map(x=>x.id===editItem.id?item:x):[...goals,item]);
+    setModal(null);setEditItem(null);
+  };
+
+  const submitSub=e=>{
+    e.preventDefault();
+    if(!sf.name||!sf.amount) return;
+    const item={...sf,amount:+sf.amount,id:editItem?.id||uid()};
+    ss(editItem?subs.map(x=>x.id===editItem.id?item:x):[...subs,item]);
+    setModal(null);setEditItem(null);
+  };
+
+  const addToGoal=()=>{
+    if(!goalSel||!goalAddAmt) return;
+    sg(goals.map(g=>g.id===goalSel.id?{...g,saved:Math.min(g.target,(g.saved||0)+(+goalAddAmt))}:g));
+    setGAA("");
+  };
+
+  const exportCSV=()=>{
+    const rows=[["Data","Tipo","Descrizione","Categoria","Importo"]];
+    mExp.forEach(e=>rows.push([e.date,"Spesa",e.description,getCat(e.category).label,e.amount]));
+    mInc.forEach(e=>rows.push([e.date,"Entrata",e.description,getIC(e.category).label,e.amount]));
+    const blob=new Blob([rows.map(r=>r.join(",")).join("\n")],{type:"text/csv"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`spese-${month}.csv`;a.click();
+  };
+
+  const disp=n=>hideAmts?"••••":fmt(n);
+
+  const navItems=[
+    {id:"dashboard",emoji:"📊",label:"Home"},
+    {id:"spese",    emoji:"💸",label:"Spese"},
+    {id:"entrate",  emoji:"💰",label:"Entrate"},
+    {id:"subs",     emoji:"🔄",label:"Abbonamenti"},
+    {id:"goals",    emoji:"🎯",label:"Obiettivi"},
+  ];
+
+  return (
+    <div style={{display:"flex", flexDirection:"column", height:"100%", background:COLORS.bgGradient}}>
+      {/* ── HEADER ── */}
+      <div className="header glass" style={{
+        padding: "14px 16px",
+        paddingTop: "max(14px,env(safe-area-inset-top))",
+        position: "sticky",
+        top: 0,
+        zIndex: 300,
+        borderBottom: `1px solid ${COLORS.border}`,
+      }}>
+        <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", maxWidth:640, margin:"0 auto"}}>
+          <div style={{display:"flex", alignItems:"center", gap:10}}>
+            <div style={{
+              width:42,
+              height:42,
+              background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`,
+              borderRadius: 14,
+              display:"flex",
+              alignItems:"center",
+              justifyContent:"center",
+              fontSize:22,
+              boxShadow: `0 8px 24px rgba(99,102,241,0.3)`
+            }}>🏠</div>
+            <div>
+              <div style={{fontFamily:"'Space Grotesk'", fontSize:18, fontWeight:700, letterSpacing:-0.5}}>CasaSpese</div>
+              <div style={{fontSize:9, color:COLORS.textMuted, fontWeight:600}}>eleganza finanziaria</div>
+            </div>
+          </div>
+          <div style={{display:"flex", gap:8}}>
+            <button onClick={()=>setHideAmts(!hideAmts)} style={{
+              background:`rgba(99,102,241,0.1)`,
+              border: `1px solid ${COLORS.border}`,
+              color:COLORS.primary,
+              padding:"8px 12px",
+              borderRadius:10,
+              fontSize:14,
+              cursor:"pointer",
+              transition:"all 0.2s"
+            }}>
+              {hideAmts?"👁":"🔒"}
+            </button>
+            <button onClick={exportCSV} style={{
+              background:`rgba(99,102,241,0.1)`,
+              border: `1px solid ${COLORS.border}`,
+              color:COLORS.primary,
+              padding:"8px 12px",
+              borderRadius:10,
+              fontSize:12,
+              fontWeight:600,
+              cursor:"pointer",
+              transition:"all 0.2s"
+            }}>CSV</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── MAIN SCROLL ── */}
+      <div style={{flex:1, overflowY:"auto", WebkitOverflowScrolling:"touch"}}>
+        <div className="main-scroll" style={{padding:"16px", paddingBottom:100, maxWidth:640, margin:"0 auto"}}>
+
+          {/* Month nav */}
+          <div style={{display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18}}>
+            <button onClick={prevMon} className="press" style={{
+              background:`rgba(99,102,241,0.1)`,
+              border: `1px solid ${COLORS.border}`,
+              color:COLORS.primary,
+              padding:"9px 13px",
+              borderRadius:10,
+              fontSize:16,
+              fontWeight:700,
+              cursor:"pointer"
+            }}>‹</button>
+            <h2 style={{
+              fontFamily:"'Space Grotesk'",
+              fontSize:18,
+              fontWeight:700,
+              letterSpacing:-0.5,
+              background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text"
+            }}>{monLabel(month)}</h2>
+            <button onClick={nextMon} className="press" style={{
+              background:`rgba(99,102,241,0.1)`,
+              border: `1px solid ${COLORS.border}`,
+              color:COLORS.primary,
+              padding:"9px 13px",
+              borderRadius:10,
+              fontSize:16,
+              fontWeight:700,
+              cursor:"pointer"
+            }}>›</button>
+          </div>
+
+          {/* Over-budget alert */}
+          {overBudget.length>0&&view==="dashboard"&&(
+            <div className="fade-in" style={{
+              background: `${COLORS.danger}15`,
+              border: `1px solid ${COLORS.danger}40`,
+              borderRadius: 12,
+              padding: "12px 14px",
+              marginBottom: 14,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}>
+              <span>⚠️</span>
+              <span style={{color:COLORS.danger, fontSize:12, fontWeight:600}}>
+                {overBudget.length} {overBudget.length===1?"categoria ha":"categorie hanno"} superato il budget
+              </span>
+            </div>
+          )}
+
+          {/* ════ DASHBOARD ════ */}
+          {view==="dashboard"&&(
+            <div className="fade-in">
+              {/* KPI Grid */}
+              <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16}}>
+                {[
+                  {label:"Uscite", val:totalExp, color:COLORS.danger, emoji:"💸", sub:`${mExp.length} transazioni`},
+                  {label:"Entrate", val:totalInc, color:COLORS.success, emoji:"💰", sub:`${mInc.length} transazioni`},
+                  {label:"Saldo", val:Math.abs(balance), color:balance>=0?COLORS.success:COLORS.danger, emoji:balance>=0?"✅":"⚠️", sub:balance>=0?"Risparmio":"Deficit"},
+                  {label:"Proiezione", val:projected, color:COLORS.warning, emoji:"📈", sub:`${fmt(avgDaily)}/gg`},
+                ].map((k,i)=>(
+                  <Card key={i} style={{padding:16}} hover={true}>
+                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8}}>
+                      <span style={{fontSize:11, color:COLORS.textMuted, textTransform:"uppercase", letterSpacing:1.2, fontWeight:700}}>
+                        {k.label}
+                      </span>
+                      <span style={{fontSize:20}}>{k.emoji}</span>
+                    </div>
+                    <p style={{
+                      fontSize:20,
+                      fontWeight:800,
+                      background: `linear-gradient(135deg, ${k.color}, ${k.color}ee)`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      letterSpacing: -0.5,
+                    }}>{disp(k.val)}</p>
+                    <p style={{fontSize:10, color:COLORS.textMuted, marginTop:4}}>{k.sub}</p>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Quick add buttons */}
+              <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16}}>
+                <Btn size="lg" onClick={()=>openExp()} style={{borderRadius:14, background:`linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})`}}>+ Spesa</Btn>
+                <Btn size="lg" onClick={()=>openInc()} style={{borderRadius:14, background:`linear-gradient(135deg, ${COLORS.success}, ${COLORS.successLight})`}} variant="success">+ Entrata</Btn>
+              </div>
+
+              {/* Upcoming bills */}
+              {upcomingBills.length>0&&(
+                <Card style={{padding:16, marginBottom:14}}>
+                  <p style={{fontFamily:"'Space Grotesk'", fontWeight:700, fontSize:14, marginBottom:12}}>🔔 Scadenze</p>
+                  {upcomingBills.map(s=>{
+                    const daysLeft=s.day-new Date().getDate();
+                    return (
+                      <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:`1px solid ${COLORS.border}`, "&:last-child": {borderBottom:"none"}}}>
+                        <div style={{display:"flex", alignItems:"center", gap:10}}>
+                          <span style={{fontSize:22}}>{s.emoji}</span>
+                          <div>
+                            <p style={{fontSize:13, fontWeight:700}}>{s.name}</p>
+                            <p style={{fontSize:10, color:COLORS.textMuted}}>{daysLeft===0?"Oggi":daysLeft===1?"Domani":`Tra ${daysLeft}gg`}</p>
+                          </div>
+                        </div>
+                        <Chip color={COLORS.danger}>{disp(s.amount)}</Chip>
+                      </div>
+                    );
+                  })}
+                </Card>
+              )}
+
+              {/* Budget summary */}
+              <Card style={{padding:16, marginBottom:14}}>
+                <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14}}>
+                  <p style={{fontFamily:"'Space Grotesk'", fontWeight:700, fontSize:14}}>💰 Budget</p>
+                  <Btn size="sm" variant="ghost" onClick={()=>setModal("budget")}>⚙ Modifica</Btn>
+                </div>
+                {catData.length===0&&<p style={{color:COLORS.textMuted, fontSize:12, textAlign:"center", padding:"12px 0"}}>Nessuna spesa</p>}
+                {catData.slice(0,6).map(c=>(
+                  <div key={c.id} style={{marginBottom:12}}>
+                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:5}}>
+                      <span style={{fontSize:12, display:"flex", alignItems:"center", gap:6, fontWeight:700}}>
+                        <span style={{fontSize:16}}>{c.emoji}</span>{c.label}
+                      </span>
+                      <span style={{fontSize:12, fontWeight:800, color:c.budget&&c.total>c.budget?COLORS.danger:COLORS.text}}>
+                        {disp(c.total)}{c.budget>0&&<span style={{color:COLORS.textMuted, fontWeight:400}}>/{disp(c.budget)}</span>}
+                      </span>
+                    </div>
+                    <ProgressBar value={c.total} max={c.budget||c.total||1} color={c.budget&&c.total>c.budget?COLORS.danger:c.color}/>
+                  </div>
+                ))}
+              </Card>
+
+              {/* Recent transactions */}
+              <Card style={{padding:16}}>
+                <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12}}>
+                  <p style={{fontFamily:"'Space Grotesk'", fontWeight:700, fontSize:14}}>🕐 Ultime Spese</p>
+                  <button onClick={()=>setView("spese")} style={{background:"none", border:"none", color:COLORS.primary, fontSize:12, fontWeight:700, cursor:"pointer"}}>Tutte ›</button>
+                </div>
+                {[...mExp].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(ex=>{
+                  const cat=getCat(ex.category);
+                  return (
+                    <div key={ex.id} className="row-item" style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"10px 8px", borderRadius:10}}>
+                      <div style={{display:"flex", alignItems:"center", gap:10, flex:1}}>
+                        <div style={{
+                          width:36,
+                          height:36,
+                          background: `${cat.color}20`,
+                          borderRadius:10,
+                          display:"flex",
+                          alignItems:"center",
+                          justifyContent:"center",
+                          fontSize:17,
+                          flexShrink:0
+                        }}>{cat.emoji}</div>
+                        <div style={{minWidth:0}}>
+                          <p style={{fontSize:13, fontWeight:700, lineHeight:1.2}}>{ex.description}</p>
+                          <p style={{fontSize:10, color:COLORS.textMuted}}>{ex.date}</p>
+                        </div>
+                      </div>
+                      <span style={{fontWeight:800, color:COLORS.danger, fontSize:13, flexShrink:0}}>-{disp(ex.amount)}</span>
+                    </div>
+                  );
+                })}
+                {mExp.length===0&&<p style={{color:COLORS.textMuted, fontSize:13, textAlign:"center", padding:"16px 0"}}>Nessuna spesa</p>}
+              </Card>
+            </div>
+          )}
+
+          {/* ════ SPESE ════ */}
+          {view==="spese"&&(
+            <div className="fade-in">
+              <div style={{display:"flex", gap:10, marginBottom:14}}>
+                <div style={{flex:1, position:"relative"}}>
+                  <span style={{position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", fontSize:14}}>🔍</span>
+                  <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cerca spese..."
+                    style={{
+                      width:"100%",
+                      background:COLORS.cardDarker,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius:12,
+                      padding:"11px 14px 11px 36px",
+                      color:COLORS.text,
+                      fontSize:14,
+                    }}/>
+                </div>
+                <Btn onClick={()=>openExp()}>+ Spesa</Btn>
+              </div>
+
+              {/* Category pills */}
+              <div style={{display:"flex", gap:6, overflowX:"auto", paddingBottom:8, marginBottom:14, WebkitOverflowScrolling:"touch"}}>
+                {EXP_CATS.filter(c=>mExp.some(e=>e.category===c.id)).map(c=>(
+                  <button key={c.id} onClick={()=>setSearch(search===c.label?"":c.label)}
+                    style={{
+                      background: search===c.label ? `${c.color}25` : `${c.color}12`,
+                      border: `1px solid ${search===c.label ? c.color : c.color+"40"}`,
+                      color:c.color,
+                      padding:"6px 12px",
+                      borderRadius:20,
+                      fontSize:11,
+                      fontWeight:700,
+                      whiteSpace:"nowrap",
+                      cursor:"pointer",
+                      flexShrink:0,
+                      transition:"all 0.2s"
+                    }}>
+                    {c.emoji} {c.label}
+                  </button>
+                ))}
+                {search&&<button onClick={()=>setSearch("")} style={{background:COLORS.cardDarker, border:`1px solid ${COLORS.border}`, color:COLORS.textMuted, padding:"6px 12px", borderRadius:20, fontSize:11, flexShrink:0, cursor:"pointer"}}>✕ Reset</button>}
+              </div>
+
+              <Card style={{padding:0, overflow:"hidden"}}>
+                {fExp.length===0&&(
+                  <div style={{padding:40, textAlign:"center"}}>
+                    <p style={{fontSize:40, marginBottom:10, opacity:0.3}}>🧾</p>
+                    <p style={{color:COLORS.textMuted, fontSize:14, marginBottom:16}}>Nessuna spesa trovata</p>
+                    <Btn onClick={()=>openExp()}>+ Prima spesa</Btn>
+                  </div>
+                )}
+                {[...fExp].sort((a,b)=>b.date.localeCompare(a.date)).map((ex,idx)=>{
+                  const cat=getCat(ex.category);
+                  return (
+                    <div key={ex.id} className="row-item" style={{
+                      display:"flex", alignItems:"center", justifyContent:"space-between",
+                      padding:"12px 14px",
+                      borderBottom:idx<fExp.length-1?`1px solid ${COLORS.border}30`:"none",
+                      transition:"all 0.2s"
+                    }}>
+                      <div style={{display:"flex", alignItems:"center", gap:10, flex:1, minWidth:0}}>
+                        <div style={{
+                          width:36,
+                          height:36,
+                          background:`${cat.color}20`,
+                          borderRadius:10,
+                          display:"flex",
+                          alignItems:"center",
+                          justifyContent:"center",
+                          fontSize:18,
+                          flexShrink:0
+                        }}>{cat.emoji}</div>
+                        <div style={{minWidth:0}}>
+                          <p style={{fontSize:13, fontWeight:700, lineHeight:1.2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>{ex.description}</p>
+                          <p style={{fontSize:10, color:COLORS.textMuted}}>{ex.date} · {cat.label}{ex.recurring?" · 🔄":""}</p>
+                        </div>
+                      </div>
+                      <div style={{display:"flex", alignItems:"center", gap:8, flexShrink:0}}>
+                        <span style={{fontWeight:800, color:COLORS.danger, fontSize:13}}>-{disp(ex.amount)}</span>
+                        <button onClick={()=>openExp(ex)} style={{background:"none", border:"none", color:COLORS.textMuted, fontSize:16, padding:4, cursor:"pointer"}}>✏️</button>
+                        <button onClick={()=>se(expenses.filter(e=>e.id!==ex.id))} style={{background:"none", border:"none", color:COLORS.textMuted, fontSize:16, padding:4, cursor:"pointer"}}>🗑</button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {fExp.length>0&&(
+                  <div style={{padding:"12px 14px", background:COLORS.cardDarker, borderTop:`1px solid ${COLORS.border}`, display:"flex", justifyContent:"space-between"}}>
+                    <span style={{color:COLORS.textMuted, fontSize:12}}>{fExp.length} transazioni</span>
+                    <span style={{fontWeight:800, color:COLORS.danger, fontSize:13}}>-{disp(fExp.reduce((s,e)=>s+e.amount,0))}</span>
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
+
+          {/* ════ ENTRATE ════ */}
+          {view==="entrate"&&(
+            <div className="fade-in">
+              <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14}}>
+                <Card style={{padding:14}}>
+                  <p style={{fontSize:10, color:COLORS.textMuted, textTransform:"uppercase", letterSpacing:1.2, fontWeight:700, marginBottom:4}}>Totale Entrate</p>
+                  <p style={{fontSize:20, fontWeight:800, color:COLORS.success, fontFamily:"'Space Grotesk'"}}>{disp(totalInc)}</p>
+                </Card>
+                <Card style={{padding:14}}>
+                  <p style={{fontSize:10, color:COLORS.textMuted, textTransform:"uppercase", letterSpacing:1.2, fontWeight:700, marginBottom:4}}>Saldo Netto</p>
+                  <p style={{fontSize:20, fontWeight:800, color:balance>=0?COLORS.success:COLORS.danger, fontFamily:"'Space Grotesk'"}}>{disp(Math.abs(balance))}</p>
+                </Card>
+              </div>
+              <Btn size="lg" onClick={()=>openInc()} style={{width:"100%", borderRadius:14, background:`linear-gradient(135deg, ${COLORS.success}, ${COLORS.successLight})`}} variant="success">+ Nuova Entrata</Btn>
+              <div style={{marginTop:14}}>
+                <Card style={{padding:0, overflow:"hidden"}}>
+                  {mInc.length===0&&(
+                    <div style={{padding:40, textAlign:"center"}}>
+                      <p style={{fontSize:40, marginBottom:10, opacity:0.3}}>💰</p>
+                      <p style={{color:COLORS.textMuted, fontSize:14, marginBottom:16}}>Nessuna entrata registrata</p>
+                    </div>
+                  )}
+                  {[...mInc].sort((a,b)=>b.date.localeCompare(a.date)).map((inc,idx)=>{
+                    const cat=getIC(inc.category);
+                    return (
+                      <div key={inc.id} className="row-item" style={{display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px", borderBottom:idx<mInc.length-1?`1px solid ${COLORS.border}30`:"none"}}>
+                        <div style={{display:"flex", alignItems:"center", gap:10, flex:1}}>
+                          <div style={{width:36, height:36, background:`${cat.color}20`, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18}}>{cat.emoji}</div>
+                          <div>
+                            <p style={{fontSize:13, fontWeight:700}}>{inc.description}</p>
+                            <p style={{fontSize:10, color:COLORS.textMuted}}>{inc.date} · {cat.label}</p>
+                          </div>
+                        </div>
+                        <div style={{display:"flex", alignItems:"center", gap:8, flexShrink:0}}>
+                          <span style={{fontWeight:800, color:COLORS.success, fontSize:13}}>+{disp(inc.amount)}</span>
+                          <button onClick={()=>openInc(inc)} style={{background:"none", border:"none", color:COLORS.textMuted, fontSize:16, padding:4, cursor:"pointer"}}>✏️</button>
+                          <button onClick={()=>si(incomes.filter(e=>e.id!==inc.id))} style={{background:"none", border:"none", color:COLORS.textMuted, fontSize:16, padding:4, cursor:"pointer"}}>🗑</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* ════ ABBONAMENTI ════ */}
+          {view==="subs"&&(
+            <div className="fade-in">
+              <Card style={{padding:14, marginBottom:14, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                <div><p style={{fontSize:10, color:COLORS.textMuted, textTransform:"uppercase", letterSpacing:1.2}}>Costo Mensile</p><p style={{fontSize:22, fontWeight:800, color:COLORS.warning, fontFamily:"'Space Grotesk'", marginTop:4}}>{disp(totalSubs)}</p></div>
+                <span style={{fontSize:36}}>🔄</span>
+              </Card>
+              <Btn size="lg" onClick={()=>{setEditItem(null);setSf({name:"",amount:"",day:1,color:COLORS.primary,emoji:"📱"});setModal("sub");}} style={{width:"100%", borderRadius:14}}>+ Abbonamento</Btn>
+              <div style={{marginTop:14}}>
+                {subs.length===0&&<Card style={{padding:50, textAlign:"center"}}><p style={{fontSize:40, opacity:0.3, marginBottom:12}}>🔄</p><p style={{color:COLORS.textMuted}}>Nessun abbonamento</p></Card>}
+                {subs.map(s=>{
+                  const day=new Date().getDate();
+                  const daysLeft=s.day>=day?s.day-day:daysInMon(curMon())-day+s.day;
+                  return (
+                    <Card key={s.id} style={{padding:16, marginBottom:10}}>
+                      <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
+                        <div style={{display:"flex", alignItems:"center", gap:12}}>
+                          <div style={{width:44, height:44, background:`${s.color}20`, border:`1px solid ${s.color}40`,
